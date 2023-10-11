@@ -152,6 +152,21 @@ where Person: PartialEq {
         }
     }
 
+    pub fn first(&self) -> Option<Person> {
+        let first = &self.head.as_ref().unwrap().person;
+        
+        if !self.head.is_none() {
+            return Some(Person {
+                name: first.name.clone(),
+                surname: first.surname.clone(),
+                age: first.age.clone(),
+                }
+            )
+        }
+
+        None
+    }
+
     pub fn print(&self) {
         let mut current = &self.head;
         if !self.head.is_none(){
@@ -164,11 +179,11 @@ where Person: PartialEq {
 }
 
 fn main(){
-    let person: Person = Person {
-        name: "John".into(),
-        surname: "Doe".into(),
-        age: 42.into()
-    };
+    // let person: Person = Person {
+    //     name: "John".into(),
+    //     surname: "Doe".into(),
+    //     age: 42.into()
+    // };
 
     let person2: Person = Person {
         name: "Jan".into(),
@@ -176,29 +191,40 @@ fn main(){
         age: 20.into(),
     };
 
-    let person3: Person = Person {
-        name: "Maciej".into(),
-        surname: "Nowak".into(),
-        age: 30.into(),
-    };
+    // let person3: Person = Person {
+    //     name: "Maciej".into(),
+    //     surname: "Nowak".into(),
+    //     age: 30.into(),
+    // };
 
     let mut list: LinkedList = LinkedList::new();
 
-    list.push_left(person);
-    list.push_right(&person2);
-    list.push_left(person3);
+    // list.push_left(person);
+    // list.push_right(&person2);
+    // list.push_left(person3);
 
     list.print();
 
-    print!("\n{}", list.locate(&person2));
+    print!("\nRun locate!\n{}\n\n", list.locate(&person2));
 
-    let person = list.retrieve(1).unwrap();
-
-    print!("\n\n{} {} {}", person.name, person.surname, person.age);
+    let person3 = list.retrieve(1);
+    if person3 == None {
+        print!("Not Found!\n");
+    } else {
+        let person3 = person3.unwrap();
+        print!("Run retrieve!\n{} {} {}\n\n", person3.name, person3.surname, person3.age);
+    }
 
     list.delete(&person2);
-
-    print!("\n\n");
+    print!("Run delete!\n");
 
     list.print();
+
+    let first = list.first();
+    if first == None {
+        print!("Not Found!\n");
+    } else {
+        let first = first.unwrap();
+        print!("\nPrinted first!\n{} {} {}", first.name, first.surname, first.age);
+    }
 }
