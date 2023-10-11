@@ -2,12 +2,6 @@ pub struct Person {
     pub name: Box<str>,
     pub surname: Box<str>,
     pub age: Box<i32>,
-    pub next: Option<Box<Person>>,
-}
-
-pub struct LinkedList {
-    head: Option<Box<Person>>,
-    tail: *mut Person,
 }
 
 impl Person {
@@ -15,8 +9,7 @@ impl Person {
         Person { 
             name: "".into(), 
             surname: "".into(), 
-            age: 0.into(), 
-            next: None 
+            age: 0.into(),
         }
     }
 }
@@ -27,6 +20,25 @@ impl PartialEq for Person {
     }
 }
 
+pub struct Node {
+    pub person: Person,
+    pub next: Option<Box<Node>>,
+}
+
+impl Node {
+    pub fn new() -> Self {
+        Node { 
+            person: Person::new(), 
+            next: None 
+        }
+    }
+}
+
+pub struct LinkedList {
+    head: Option<Box<Node>>,
+    tail: *mut Node,
+}
+
 impl LinkedList
 where Person: PartialEq {
     pub fn new() -> Self {
@@ -35,10 +47,12 @@ where Person: PartialEq {
 
     pub fn push_left(&mut self, person: Person) {
         let new_node = Box::new(
-            Person { 
-                name: person.name, 
-                surname: person.surname, 
-                age: person.age,
+            Node {
+                person: Person {
+                    name: person.name.clone(),
+                    surname: person.surname.clone(),
+                    age: person.age.clone(),
+                },
                 next: self.head.take()
             }
         );
@@ -52,10 +66,12 @@ where Person: PartialEq {
 
     pub fn push_right(&mut self, person: &Person) {
         let new_node = Box::new(
-            Person {
-                name: person.name.clone(),
-                surname: person.surname.clone(),
-                age: person.age.clone(),
+            Node {
+                person: Person {
+                    name: person.name.clone(),
+                    surname: person.surname.clone(),
+                    age: person.age.clone(),
+                },
                 next: None
             }
         );
@@ -82,7 +98,7 @@ where Person: PartialEq {
         }
 
         while let Some(ref node) = *current {
-            if **node == *person {
+            if node.person == *person {
                 return "Found on ".to_owned() + &pos.to_string();
             }
             current = &node.next;
@@ -101,7 +117,7 @@ where Person: PartialEq {
 
         while let Some(ref node) = *current {
             if current_pos == pos {
-                return Some(node);
+                return Some(&node.person);
             }
             current = &node.next;
             current_pos += 1;
@@ -114,7 +130,7 @@ where Person: PartialEq {
             return;
         }
 
-        if **self.head.as_ref().unwrap() == *person {
+        if self.head.as_ref().unwrap().person == *person {
             self.head = self.head.take().unwrap().next;
             if self.head.is_none() {
                 self.tail = std::ptr::null_mut();
@@ -125,7 +141,7 @@ where Person: PartialEq {
         let mut current = &mut self.head;
 
         while let Some(ref mut node) = *current {
-            if node.next.is_some() && **node.next.as_ref().unwrap() == *person {
+            if node.next.is_some() && node.next.as_ref().unwrap().person == *person {
                 if node.next.as_ref().unwrap().next.is_none() {
                     self.tail = &mut **node as *mut _;
                 }
@@ -140,7 +156,7 @@ where Person: PartialEq {
         let mut current = &self.head;
         if !self.head.is_none(){
             while let Some(ref node) = *current {
-                println!("Person: {} {} {}", node.name, node.surname, node.age);
+                println!("Person: {} {} {}", node.person.name, node.person.surname, node.person.age);
                 current = &node.next;
             }
         } else { println!("None"); }
@@ -151,22 +167,19 @@ fn main(){
     let person: Person = Person {
         name: "John".into(),
         surname: "Doe".into(),
-        age: 42.into(),
-        next: None
+        age: 42.into()
     };
 
     let person2: Person = Person {
         name: "Jan".into(),
         surname: "Kowalski".into(),
         age: 20.into(),
-        next: None
     };
 
     let person3: Person = Person {
         name: "Maciej".into(),
         surname: "Nowak".into(),
         age: 30.into(),
-        next: None
     };
 
     let mut list: LinkedList = LinkedList::new();
