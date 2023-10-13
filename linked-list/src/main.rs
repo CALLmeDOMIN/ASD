@@ -1,34 +1,12 @@
-pub struct Person {
-    pub name: Box<str>,
-    pub surname: Box<str>,
-    pub age: Box<i32>,
-}
-
-impl Person {
-    pub fn new() -> Self {
-        Person { 
-            name: "".into(), 
-            surname: "".into(), 
-            age: 0.into(),
-        }
-    }
-}
-
-impl PartialEq for Person {
-    fn eq(&self, other: &Self) -> bool {
-        self.name == other.name && self.surname == other.surname && self.age == other.age
-    }
-}
-
 pub struct Node {
-    pub person: Person,
+    pub data: i32,
     pub next: Option<Box<Node>>,
 }
 
 impl Node {
     pub fn new() -> Self {
         Node { 
-            person: Person::new(), 
+            data: 0, 
             next: None 
         }
     }
@@ -39,20 +17,15 @@ pub struct LinkedList {
     tail: *mut Node,
 }
 
-impl LinkedList
-where Person: PartialEq {
+impl LinkedList {
     pub fn new() -> Self {
         LinkedList { head: None,  tail: std::ptr::null_mut() }
     }
 
-    pub fn push_left(&mut self, person: Person) {
+    pub fn push_left(&mut self, new_data: i32) {
         let new_node = Box::new(
             Node {
-                person: Person {
-                    name: person.name.clone(),
-                    surname: person.surname.clone(),
-                    age: person.age.clone(),
-                },
+                data: new_data,
                 next: self.head.take()
             }
         );
@@ -64,14 +37,10 @@ where Person: PartialEq {
         self.head = Some(new_node);
     }
 
-    pub fn push_right(&mut self, person: &Person) {
+    pub fn push_right(&mut self, new_data: i32) {
         let new_node = Box::new(
             Node {
-                person: Person {
-                    name: person.name.clone(),
-                    surname: person.surname.clone(),
-                    age: person.age.clone(),
-                },
+                data: new_data,
                 next: None
             }
         );
@@ -89,7 +58,29 @@ where Person: PartialEq {
         }
     }
 
-    pub fn locate(&self, person: &Person) -> String {
+    pub fn insert(&mut self, new_data: i32, pos: usize) {
+        let mut current = &mut self.head;
+        let mut current_pos = 0;
+
+        while let Some(ref mut node) = current {
+            if current_pos == pos {
+                let new_node = Box::new(
+                    Node {
+                        data: new_data,
+                        next: node.next.take()
+                    }
+                );
+                node.next = Some(new_node);
+                return;
+            }
+            current = &mut node.next;
+            current_pos += 1;
+        }
+
+        return;
+    }
+
+    pub fn locate(&self, new_data: i32) -> String {
         let mut current = &self.head;
         let mut pos = 0;
 
@@ -98,7 +89,7 @@ where Person: PartialEq {
         }
 
         while let Some(ref node) = *current {
-            if node.person == *person {
+            if node.data == new_data {
                 return "Found on ".to_owned() + &pos.to_string();
             }
             current = &node.next;
@@ -107,7 +98,7 @@ where Person: PartialEq {
         return "Not Found".to_owned();
     }
 
-    pub fn retrieve(&self, pos: usize) -> Option<&Person> {
+    pub fn retrieve(&self, pos: usize) -> Option<i32> {
         let mut current = &self.head;
         let mut current_pos = 0;
 
@@ -117,7 +108,7 @@ where Person: PartialEq {
 
         while let Some(ref node) = *current {
             if current_pos == pos {
-                return Some(&node.person);
+                return Some(node.data);
             }
             current = &node.next;
             current_pos += 1;
@@ -125,12 +116,12 @@ where Person: PartialEq {
         return None;
     }
 
-    pub fn delete(&mut self, person: &Person) {
+    pub fn delete(&mut self, new_data: i32) {
         if self.head.is_none() {
             return;
         }
 
-        if self.head.as_ref().unwrap().person == *person {
+        if self.head.as_ref().unwrap().data == new_data {
             self.head = self.head.take().unwrap().next;
             if self.head.is_none() {
                 self.tail = std::ptr::null_mut();
@@ -141,7 +132,7 @@ where Person: PartialEq {
         let mut current = &mut self.head;
 
         while let Some(ref mut node) = *current {
-            if node.next.is_some() && node.next.as_ref().unwrap().person == *person {
+            if node.next.is_some() && node.next.as_ref().unwrap().data == new_data {
                 if node.next.as_ref().unwrap().next.is_none() {
                     self.tail = &mut **node as *mut _;
                 }
@@ -152,26 +143,59 @@ where Person: PartialEq {
         }
     }
 
-    pub fn first(&self) -> Option<Person> {
-        let first = &self.head.as_ref().unwrap().person;
+    pub fn first(&self) -> Option<i32> {
+        let first = &self.head.as_ref().unwrap().data;
         
         if !self.head.is_none() {
-            return Some(Person {
-                name: first.name.clone(),
-                surname: first.surname.clone(),
-                age: first.age.clone(),
-                }
-            )
+            return Some(first.clone());
         }
 
         None
+    }
+
+    pub fn find_max(&self) -> Option<i32> {
+        let mut current = &self.head;
+        let mut max = std::i32::MIN;
+
+        if self.head.is_none() {
+            return None;
+        }
+
+        while let Some(ref node) = *current {
+            if node.data > max {
+                max = node.data;
+            }
+            current = &node.next;
+        }
+        return Some(max);
+    }
+
+    pub fn del_one_after_max(&mut self) {
+        let max = match self.find_max() {
+            Some(val) => val,
+            None => return,
+        };
+    
+        let mut current = &mut self.head;
+        while let Some(ref mut node) = *current {
+            if node.data == max {
+                node.next = node.next.take().and_then(|next_node| next_node.next);
+                return;
+            }
+            current = &mut node.next;
+        }
+    }
+
+    pub fn makenull(&mut self) {
+        self.head = None;
+        self.tail = std::ptr::null_mut();
     }
 
     pub fn print(&self) {
         let mut current = &self.head;
         if !self.head.is_none(){
             while let Some(ref node) = *current {
-                println!("Person: {} {} {}", node.person.name, node.person.surname, node.person.age);
+                println!("Data: {}", node.data);
                 current = &node.next;
             }
         } else { println!("None"); }
@@ -179,43 +203,30 @@ where Person: PartialEq {
 }
 
 fn main(){
-    // let person: Person = Person {
-    //     name: "John".into(),
-    //     surname: "Doe".into(),
-    //     age: 42.into()
-    // };
-
-    let person2: Person = Person {
-        name: "Jan".into(),
-        surname: "Kowalski".into(),
-        age: 20.into(),
-    };
-
-    // let person3: Person = Person {
-    //     name: "Maciej".into(),
-    //     surname: "Nowak".into(),
-    //     age: 30.into(),
-    // };
+    let num1 = 1;
+    let num2 = 2;
+    let num3 = 3;
+    let num5 = 5;
 
     let mut list: LinkedList = LinkedList::new();
 
-    // list.push_left(person);
-    // list.push_right(&person2);
-    // list.push_left(person3);
+    list.push_left(num1);
+    list.push_right(num2);
+    list.push_left(num3);
 
     list.print();
 
-    print!("\nRun locate!\n{}\n\n", list.locate(&person2));
+    print!("\nRun locate!\n{}\n\n", list.locate(num2));
 
-    let person3 = list.retrieve(1);
-    if person3 == None {
+    let num4 = list.retrieve(1);
+    if num4 == None {
         print!("Not Found!\n");
     } else {
-        let person3 = person3.unwrap();
-        print!("Run retrieve!\n{} {} {}\n\n", person3.name, person3.surname, person3.age);
+        let num4 = num4.unwrap();
+        print!("Run retrieve!\n{}\n\n", num4);
     }
 
-    list.delete(&person2);
+    list.delete(num2);
     print!("Run delete!\n");
 
     list.print();
@@ -225,6 +236,18 @@ fn main(){
         print!("Not Found!\n");
     } else {
         let first = first.unwrap();
-        print!("\nPrinted first!\n{} {} {}", first.name, first.surname, first.age);
+        print!("\nPrinted first!\n{}", first);
     }
+
+    list.insert(num5, 0);
+    print!("\n\nRun insert!\n");
+    list.print();
+
+    list.del_one_after_max();
+    print!("\n\nRun del_one_after_max!\n");
+    list.print();
+
+    list.makenull();
+    print!("\n\nRun makenull!\n");
+    list.print();
 }
