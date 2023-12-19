@@ -2,7 +2,7 @@ Bubble sort:
     Zalety:
      - prostota implementacji i zrozumienia
      - stabilność
-     - sprawdzanie czy tablica jest posortowana
+     - sprawdzanie czy struktura jest posortowana
     Wady:
      - złożoność (O(n^2))
      - nadmiarowe porównania (n^2)
@@ -14,7 +14,7 @@ Insertion sort:
      - efektywność dla małych danych
      - stabilność
      - mała liczba przestawień
-     - sprawdzanie czy tablica jest posortowana
+     - sprawdzanie czy struktura jest posortowana
     Wady:
      - nieefektywność dla dużych danych
      - złożoność O(n^2)
