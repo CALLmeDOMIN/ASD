@@ -6,7 +6,7 @@ fn macierz_sasiadow(graph: &Vec<Vec<(i32, i32)>>) -> Vec<Vec<i32>> {
 
         for i in 1..vertices.len() {
             let edge = vertices[i].0 as usize;
-            matrix[vertex - 1][edge - 1] = 1;
+            matrix[vertex - 1][edge - 1] = 1 * vertices[i].1;
         }
     }
 
@@ -14,18 +14,26 @@ fn macierz_sasiadow(graph: &Vec<Vec<(i32, i32)>>) -> Vec<Vec<i32>> {
 }
 
 fn macierz_indydencji(graph: &Vec<Vec<(i32, i32)>>) -> Vec<Vec<i32>> {
-    let mut matrix: Vec<Vec<i32>> = vec![vec![0; graph.len()]; graph.len()];
+    let mut edges = 0;
 
-    for (i, vertices) in graph.iter().enumerate() {
-        let vertex: usize = vertices[0].0 as usize;
+    for v in graph {
+        for _ in v[1..].iter() {
+            edges += 1;
+        }
+    }
 
-        for j in 1..vertices.len() {
-            let edge = vertices[j].0 as usize;
-            if vertex < edge {
-                matrix[i][j] = 1;
-            } else {
-                matrix[i][j] = -1;
-            }
+    let mut matrix: Vec<Vec<i32>> = vec![vec![0; edges]; graph.len()];
+
+    let mut edge_counter: usize = 0 as usize;
+
+    for v in graph {
+        let vertex: usize = v[0].0 as usize;
+
+        for i in 1..v.len() {
+            let dest_v = v[i].0 as usize;
+            matrix[vertex - 1][edge_counter] = 1 * v[i].1;
+            matrix[dest_v - 1][edge_counter] = -1 * v[i].1;
+            edge_counter += 1;
         }
     }
 
@@ -84,7 +92,7 @@ fn main() {
 
     for line in matrix {
         for value in line {
-            print!("{}", value);
+            print!("{} ", value);
         }
         println!("");
     }
@@ -95,7 +103,11 @@ fn main() {
 
     for line in matrix {
         for value in line {
-            print!("{}", value);
+            if value >= 0 {
+                print!(" {} ", value);
+            } else {
+                print!("{} ", value);
+            }
         }
         println!("");
     }
