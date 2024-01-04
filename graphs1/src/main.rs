@@ -1,4 +1,4 @@
-fn macierz_sasiadow(graph: &Vec<Vec<i32>>) -> Vec<Vec<i32>> {
+fn weird_vertices(graph: &Vec<Vec<i32>>) -> Vec<i32> {
     let mut v: Vec<i32> = Vec::new();
 
     for vertices in graph {
@@ -11,6 +11,12 @@ fn macierz_sasiadow(graph: &Vec<Vec<i32>>) -> Vec<Vec<i32>> {
     }
 
     v.sort();
+
+    v
+}
+
+fn macierz_sasiadow(graph: &Vec<Vec<i32>>) -> Vec<Vec<i32>> {
+    let v: Vec<i32> = weird_vertices(graph);
 
     let mut matrix: Vec<Vec<i32>> = vec![vec![0; v.len() + 1]; v.len() + 1];
 
@@ -32,36 +38,26 @@ fn macierz_sasiadow(graph: &Vec<Vec<i32>>) -> Vec<Vec<i32>> {
     matrix
 }
 
-fn macierz_indydencji(graph: &Vec<Vec<i32>>) -> Vec<Vec<i32>> {
-    let mut v: Vec<i32> = Vec::new();
+fn macierz_incydencji(graph: &Vec<Vec<i32>>) -> Vec<Vec<i32>> {
+    let mut edges: i32 = 0;
+    let vertices: Vec<i32> = weird_vertices(graph);
 
-    for vertices in graph {
-        for vs in vertices {
-            if v.contains(vs) {
-                continue;
-            }
-            v.push(*vs);
+    for vertex in graph {
+        for _ in vertex[1..].iter() {
+            edges += 1;
         }
     }
 
-    v.sort();
+    let mut matrix: Vec<Vec<i32>> = vec![vec![0; edges as usize]; vertices.len()];
 
-    let mut matrix: Vec<Vec<i32>> = vec![vec![0; v.len() + 1]; graph.len() + 1];
-
-    for i in 1..v.len() + 1 {
-        matrix[0][i] = v[i - 1];
-    }
-
-    for (i, vertices) in graph.iter().enumerate() {
-        let vertex: i32 = vertices[0];
-        for j in 1..vertices.len() {
-            let edge = vertices[j];
-            let index: usize = matrix[0].iter().position(|&x| x == edge).unwrap();
-            if vertex < edge {
-                matrix[i + 1][index] = 1;
-            } else {
-                matrix[i + 1][index] = -1;
-            }
+    let mut edge_count: usize = 0;
+    for edges in graph {
+        let vertex: usize = vertices.iter().position(|&x| x == edges[0]).unwrap();
+        for v in edges[1..].iter() {
+            let dest_vertex = vertices.iter().position(|&x| x == *v).unwrap();
+            matrix[vertex][edge_count] = 1;
+            matrix[dest_vertex][edge_count] = -1;
+            edge_count += 1;
         }
     }
 
@@ -118,16 +114,24 @@ fn main() {
     let matrix = macierz_sasiadow(&graph);
     for line in matrix.iter() {
         for value in line.iter() {
-            print!("{} ", value);
+            if value < &10 {
+                print!(" {} ", value);
+            } else {
+                print!("{} ", value);
+            }
         }
         println!("");
     }
 
     println!("Identity matrix: ");
-    let matrix = macierz_indydencji(&graph);
+    let matrix = macierz_incydencji(&graph);
     for line in matrix.iter() {
         for value in line.iter() {
-            print!("{} ", value);
+            if value < &10 && value >= &0 {
+                print!(" {} ", value);
+            } else {
+                print!("{} ", value);
+            }
         }
         println!("");
     }
