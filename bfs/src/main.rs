@@ -4,8 +4,11 @@ fn bfs(graph: &Vec<Vec<usize>>, visited: &mut Vec<bool>, start: usize) {
 
     while !queue.is_empty() {
         let u = queue.remove(0);
+        if visited[u] {
+            continue;
+        }
         visited[u] = true;
-        println!("{}", u);
+        print!("{} ", u);
 
         for v in &graph[u] {
             if !visited[*v as usize] {
@@ -13,6 +16,7 @@ fn bfs(graph: &Vec<Vec<usize>>, visited: &mut Vec<bool>, start: usize) {
             }
         }
     }
+    println!();
 }
 
 fn main() {
